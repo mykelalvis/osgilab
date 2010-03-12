@@ -16,7 +16,7 @@ This page contains links to all sources related to my Tips&Tricks blog posts.
 
 2.1. Forward OSGi Logs to Java util logging (JUL)
 
-- Blog Post:
+- Blog Post: [http://www.osgilab.org/2010/03/osgi-tips-osgi-logging-forward-osgi.html]
 
 - Sources: [http://code.google.com/p/osgilab/source/browse/trunk/org.osgilab.tips/logs/osgi2jul/] 
 
