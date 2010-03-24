@@ -13,7 +13,7 @@
     <artifactId>jul2osgi</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
-    <name>OSGi Lab Tips&amp;Tricks: Logs - Java util logging to OSGi Log service adaptor</name>
+    <name>OSGi Lab Tips&amp;Tricks: Logs - JUL to OSGi Logs adaptor</name>
     <description>OSGi Lab Tips and Tricks: Logs - Java util logging to OSGi Log service adaptor</description>
 
     <dependencies>
