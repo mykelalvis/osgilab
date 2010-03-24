@@ -34,9 +34,18 @@ public class Activator extends Handler implements BundleActivator {
     private BundleContext bc;
     private ServiceTracker logServiceTracker;
 
+    /**
+     * Logs buffer. It's used when LogService is not available
+     */
     private ArrayBlockingQueue<LogRecord> logsBuffer;
+    /**
+     * JUL Logger names
+     */
     private String[] loggerNames;
 
+    /**
+     * Lock
+     */
     private final ReentrantLock queueLock = new ReentrantLock();
 
     public void start(BundleContext bundleContext) throws Exception {
@@ -56,20 +65,26 @@ public class Activator extends Handler implements BundleActivator {
     }
 
     private void handleSystemProperties() {
+        // init logs buffer
         String bufferSizeProperty = bc.getProperty(BUFFER_SIZE_PROPERTY_NAME);
         if (bufferSizeProperty != null) {
             try {
                 int logsBufferSize = Integer.parseInt(bufferSizeProperty);
-                logsBuffer = new ArrayBlockingQueue<LogRecord>(logsBufferSize);
-                LOG.log(Level.INFO, "Buffer Size property is set: " + bufferSizeProperty);
+                if (logsBufferSize > 0) {
+                    logsBuffer = new ArrayBlockingQueue<LogRecord>(logsBufferSize);
+                    LOG.log(Level.INFO, "Buffer Size property is set: " + bufferSizeProperty);
+                } else {
+                    LOG.log(Level.INFO, "Buffer Size property is below 0. Buffer is disabled.");
+                }
             } catch (NumberFormatException e) {
                 LOG.log(Level.WARNING, "Buffer Size property has wrong format: " + bufferSizeProperty +
-                        ". Skip logs buffer", e);
+                        ". Buffer is disabled.", e);
             }
         } else {
-            LOG.log(Level.WARNING, "Buffer Size property is not set. Skip logs buffer");
+            LOG.log(Level.WARNING, "Buffer Size property is not set. Buffer is disabled.");
         }
 
+        // init level property
         String levelProperty = bc.getProperty(LOGS_LEVEL_PROPERTY_NAME);
         if (levelProperty != null) {
             try {
@@ -85,6 +100,7 @@ public class Activator extends Handler implements BundleActivator {
             setLevel(Level.ALL);
         }
 
+        // init loggers
         String namesProperty = bc.getProperty(LOGGER_NAMES_PROPERTY_NAME);
         if (namesProperty != null) {
             try {
@@ -117,6 +133,7 @@ public class Activator extends Handler implements BundleActivator {
     }
 
     private void registerLogsHandles() {
+        // if no logger names defined - link to Root Logger
         if (loggerNames == null || loggerNames.length == 0) {
             Logger rootLogger = LogManager.getLogManager().getLogger("");
             rootLogger.addHandler(this);
@@ -142,6 +159,7 @@ public class Activator extends Handler implements BundleActivator {
 
     @Override
     public void publish(LogRecord record) {
+        // if record level is below than defined - ignore the record
         if (!isLoggable(record)) {
             return;
         }
@@ -150,6 +168,7 @@ public class Activator extends Handler implements BundleActivator {
         if (logService != null) {
             forwardToLogService(logService, record);
         } else {
+            // if log service is unavailable and buffer is enabled
             if (logsBuffer != null) {
                 queueLock.lock();
                 try {
@@ -197,6 +216,7 @@ public class Activator extends Handler implements BundleActivator {
         public Object addingService(ServiceReference serviceReference) {
             LogService logService = (LogService) bc.getService(serviceReference);
 
+            // publish logs from buffer if available
             if (logsBuffer != null) {
                 ArrayList<LogRecord> logRecords = new ArrayList<LogRecord>();
                 logsBuffer.drainTo(logRecords);
