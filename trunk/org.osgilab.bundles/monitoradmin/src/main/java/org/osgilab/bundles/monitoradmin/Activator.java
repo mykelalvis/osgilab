@@ -21,16 +21,31 @@ package org.osgilab.bundles.monitoradmin;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.monitor.MonitorAdmin;
 
 /**
+ * Monitor Admin activator
+ *
  * @author dmytro.pishchukhin
  */
 public class Activator implements BundleActivator {
+    // monitor admin instance
+    private MonitorAdminImpl monitorAdmin;
+
+    // monitor admin service registration
+    private ServiceRegistration serviceRegistration;
+
     public void start(BundleContext bundleContext) throws Exception {
-        // todo
+        monitorAdmin = new MonitorAdminImpl(bundleContext);
+
+        serviceRegistration = bundleContext.registerService(MonitorAdmin.class.getName(), monitorAdmin, null);
     }
 
     public void stop(BundleContext bundleContext) throws Exception {
-        // todo
+        serviceRegistration.unregister();
+        serviceRegistration = null;
+
+        monitorAdmin = null;
     }
 }
