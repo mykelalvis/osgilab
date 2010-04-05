@@ -20,26 +20,18 @@
 package org.osgilab.bundles.monitoradmin;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.monitor.MonitorAdmin;
-import org.osgi.service.monitor.Monitorable;
 import org.osgilab.bundles.monitoradmin.mocks.MonitorableMockServiceReference;
 import org.osgilab.bundles.monitoradmin.mocks.WritableMockBundleContext;
 import org.springframework.osgi.mock.MockBundleContext;
-import org.springframework.osgi.mock.MockServiceReference;
 
 /**
  * @author dmytro.pishchukhin
  */
 public class MonitorAdminImplTest {
-    @Before
-    public void init() {
-    }
-
     @Test
     public void testGetMonitorableNames_NoMonitorableAvailable() throws Exception {
         BundleContext bc = new MockBundleContext();
