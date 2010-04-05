@@ -31,7 +31,7 @@ import java.util.Hashtable;
 public class MonitorableMockServiceReference extends MockServiceReference {
     public MonitorableMockServiceReference(String pid) {
         super(new String[] {Monitorable.class.getName()});
-        Hashtable props = new Hashtable();
+        Hashtable<String, String> props = new Hashtable<String, String>();
         props.put(Constants.SERVICE_PID, pid);
         setProperties(props);
     }
