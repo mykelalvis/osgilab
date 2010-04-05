@@ -21,12 +21,21 @@ package org.osgilab.bundles.monitoradmin;
 
 import org.osgi.framework.Constants;
 
+import java.util.regex.Pattern;
+
 /**
  * Utils class
  *
  * @author dmytro.pishchukhin
+ *
+ * FIXME: too many calls of Regexp for validation (sometimes 2-3 times for every MonitorAdmin method)
  */
 public class Utils {
+    /**
+     * MonitorableId and Status variable name validate pattern (OSGi core 1.3.2: symbolic-name)
+     */
+    private static final Pattern ID_VALIDATE_PATTERN = Pattern.compile("((\\w|_|-)+)(\\.(\\w|_|-)+)*");
+
     public static String createServicePidFilter(String monitorableId) {
         StringBuilder builder = new StringBuilder();
         builder.append('(');
@@ -67,16 +76,20 @@ public class Utils {
      * @param path status variable path
      * @return non-nullable array with ids
      * @throws IllegalArgumentException path is <code>null</code> or invalid
-     * (contains more or less than one separator '/' or parsed IDs are empty)
+     * (contains more or less than one separator '/' or parsed IDs are empty or invalid)
      */
     protected static String[] parseIds(String path) throws IllegalArgumentException {
         if (path == null) {
             throw new IllegalArgumentException("Path is null");
         }
         String[] parts = path.split("/");
-        if (parts.length != 2 || parts[0].isEmpty() || parts[1].isEmpty()) {
+        if (parts.length != 2 || parts[0].isEmpty() || !validateId(parts[0]) || parts[1].isEmpty() || !validateId(parts[0])) {
             throw new IllegalArgumentException("Path value is invalid: " + path);
         }
         return parts;
+    }
+
+    public static boolean validateId(String id) {
+        return ID_VALIDATE_PATTERN.matcher(id).matches();
     }
 }
