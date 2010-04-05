@@ -259,11 +259,15 @@ public class MonitorAdminImpl implements MonitorAdmin {
      * @param monitorableId id that is userd to filter services
      * @return Monitorable service with specified monitorableId.
      * @throws IllegalArgumentException monitorableId is <code>null</code> or monitorableId points
-     *                                  to non-existing service
+     *                                  to non-existing service or monitorableId is invalid
      */
     private Monitorable findMonitorableById(String monitorableId) throws IllegalArgumentException {
         if (monitorableId == null) {
             throw new IllegalArgumentException("MonitorableId is null");
+        }
+
+        if (!Utils.validateId(monitorableId)) {
+            throw new IllegalArgumentException("MonitorableId is invalid");
         }
 
         ServiceReference mostSuitableMonitorable = null;
@@ -272,7 +276,7 @@ public class MonitorAdminImpl implements MonitorAdmin {
         try {
             serviceReferences = bc.getServiceReferences(Monitorable.class.getName(), Utils.createServicePidFilter(monitorableId));
         } catch (InvalidSyntaxException e) {
-            // illegal state as filter is null
+            // illegal state as filter should be ok (id is valid)
         }
 
         if (serviceReferences != null) {
