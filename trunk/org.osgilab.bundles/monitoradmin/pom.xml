@@ -8,7 +8,7 @@
 
     <groupId>org.osgilab.bundles</groupId>
     <artifactId>monitoradmin</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>1.0.0-beta-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <name>OSGi Lab MonitorAdmin</name>
     <description>OSGi MonitorAdmin API Reference Implementation</description>
@@ -79,6 +79,7 @@
                         <Bundle-Activator>org.osgilab.bundles.monitoradmin.Activator</Bundle-Activator>
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId};singleton:=true
                         </Bundle-SymbolicName>
+                        <Bundle-RequiredExecutionEnvironment>JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
                         <_removeheaders>Bnd-LastModified, Built-By, Private-Package, Tool, Build-Jdk</_removeheaders>
                     </instructions>
                 </configuration>
