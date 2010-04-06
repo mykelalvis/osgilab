@@ -18,7 +18,11 @@ public class Utils {
     /**
      * MonitorableId and Status variable name validate pattern (OSGi core 1.3.2: symbolic-name)
      */
-    private static final Pattern ID_VALIDATE_PATTERN = Pattern.compile("((\\w|_|-)+)(\\.(\\w|_|-)+)*");
+    private static final Pattern PATH_ID_VALIDATE_PATTERN = Pattern.compile("((\\w|_|-)+)(\\.(\\w|_|-)+)*");
+    /**
+     * MonitorableId and Status variable name validate pattern (OSGi CMPN 119.6.1: wildcard-pid)
+     */
+    private static final Pattern FILTER_ID_VALIDATE_PATTERN = Pattern.compile("(\\*)|(((\\w|_|-)+)(\\.(\\w|_|-)*)*)(\\*)?");
 
     public static String createServicePidFilter(String monitorableId) {
         StringBuilder builder = new StringBuilder();
@@ -30,7 +34,11 @@ public class Utils {
         return builder.toString();
     }
 
-    public static boolean validateId(String id) {
-        return ID_VALIDATE_PATTERN.matcher(id).matches();
+    public static boolean validatePathId(String id) {
+        return PATH_ID_VALIDATE_PATTERN.matcher(id).matches();
+    }
+
+    public static boolean validatePathFilterId(String id) {
+        return FILTER_ID_VALIDATE_PATTERN.matcher(id).matches();
     }
 }

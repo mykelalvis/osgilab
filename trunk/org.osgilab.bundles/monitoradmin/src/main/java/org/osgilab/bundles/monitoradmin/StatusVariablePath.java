@@ -11,9 +11,9 @@ package org.osgilab.bundles.monitoradmin;
  * @author dmytro.pishchukhin
  */
 public class StatusVariablePath {
-    private String monitorableId;
-    private String statusVariableId;
-    private String path;
+    protected String monitorableId;
+    protected String statusVariableId;
+    protected String path;
 
     /**
      * Initialize object and parse input path value
@@ -40,15 +40,18 @@ public class StatusVariablePath {
         if (statusVariableId == null) {
             throw new IllegalArgumentException("StatusVariableId is null");
         }
-        if (!Utils.validateId(monitorableId)) {
+        if (!validateId(monitorableId)) {
             throw new IllegalArgumentException("MonitorableId is invalid");
         }
-        if (!Utils.validateId(statusVariableId)) {
+        if (!validateId(statusVariableId)) {
             throw new IllegalArgumentException("StatusVariableId is invalid");
         }
         this.monitorableId = monitorableId;
         this.statusVariableId = statusVariableId;
         path = this.monitorableId + '/' + this.statusVariableId;
+    }
+
+    public StatusVariablePath() {
     }
 
     public String getMonitorableId() {
@@ -73,14 +76,18 @@ public class StatusVariablePath {
      * @throws IllegalArgumentException path is <code>null</code> or invalid
      * (contains more or less than one separator '/' or parsed IDs are empty or invalid)
      */
-    private String[] parseIds(String path) throws IllegalArgumentException {
+    protected String[] parseIds(String path) throws IllegalArgumentException {
         if (path == null) {
             throw new IllegalArgumentException("Path is null");
         }
         String[] parts = path.split("/");
-        if (parts.length != 2 || !Utils.validateId(parts[0]) || !Utils.validateId(parts[1])) {
+        if (parts.length != 2 || !validateId(parts[0]) || !validateId(parts[1])) {
             throw new IllegalArgumentException("Path value is invalid: " + path);
         }
         return parts;
+    }
+
+    protected boolean validateId(String id) {
+        return Utils.validatePathId(id);
     }
 }
