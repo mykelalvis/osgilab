@@ -1,8 +1,11 @@
+/*
+ * Copyright (c) 2010 Dmytro Pishchukhin (http://osgilab.org)
+ * This program is made available under the terms of the MIT License.
+ */
+
 package org.osgilab.tips.logs.osgi2jul;
 
 import org.osgi.framework.*;
-import org.osgi.service.event.Event;
-import org.osgi.service.event.EventHandler;
 import org.osgi.service.log.LogEntry;
 import org.osgi.service.log.LogListener;
 import org.osgi.service.log.LogReaderService;
@@ -11,7 +14,6 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
