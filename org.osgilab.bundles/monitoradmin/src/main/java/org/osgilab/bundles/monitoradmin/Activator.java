@@ -9,6 +9,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.monitor.MonitorAdmin;
+import org.osgi.service.monitor.MonitorListener;
 
 /**
  * Monitor Admin activator
@@ -25,7 +26,8 @@ public class Activator implements BundleActivator {
     public void start(BundleContext bundleContext) throws Exception {
         monitorAdmin = new MonitorAdminImpl(bundleContext);
 
-        serviceRegistration = bundleContext.registerService(MonitorAdmin.class.getName(), monitorAdmin, null);
+        serviceRegistration = bundleContext.registerService(new String[] {MonitorAdmin.class.getName(),
+                MonitorListener.class.getName()}, monitorAdmin, null);
     }
 
     public void stop(BundleContext bundleContext) throws Exception {
