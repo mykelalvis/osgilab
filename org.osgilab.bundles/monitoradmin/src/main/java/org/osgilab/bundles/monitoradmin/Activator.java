@@ -25,6 +25,7 @@ public class Activator implements BundleActivator {
 
     public void start(BundleContext bundleContext) throws Exception {
         monitorAdmin = new MonitorAdminImpl(bundleContext);
+        monitorAdmin.init();
 
         serviceRegistration = bundleContext.registerService(new String[] {MonitorAdmin.class.getName(),
                 MonitorListener.class.getName()}, monitorAdmin, null);
@@ -34,6 +35,7 @@ public class Activator implements BundleActivator {
         serviceRegistration.unregister();
         serviceRegistration = null;
 
+        monitorAdmin.uninit();
         monitorAdmin = null;
     }
 }
