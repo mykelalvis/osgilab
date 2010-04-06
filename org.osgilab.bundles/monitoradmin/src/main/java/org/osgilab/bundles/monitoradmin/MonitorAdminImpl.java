@@ -271,17 +271,140 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
         throw new UnsupportedOperationException("Method is not implemented");
     }
 
-    public MonitoringJob startScheduledJob(String initiator,
-                                           String[] statusVariables, int schedule, int count)
+    /**
+     * Starts a time based <code>MonitoringJob</code> with the parameters
+     * provided. Monitoring events will be sent according to the specified
+     * schedule. All specified <code>StatusVariable</code>s must exist when the
+     * job is started. The initiator string is used in the
+     * <code>mon.listener.id</code> field of all events triggered by the job,
+     * to allow filtering the events based on the initiator.
+     * <p/>
+     * The <code>schedule</code> parameter specifies the time in seconds
+     * between two measurements, it must be greater than 0.  The first
+     * measurement will be taken when the timer expires for the first time, not
+     * when this method is called.
+     * <p/>
+     * The <code>count</code> parameter defines the number of measurements to be
+     * taken, and must either be a positive integer, or 0 if the measurement is
+     * to run until explicitly stopped.
+     * <p/>
+     * The entity which initiates a <code>MonitoringJob</code> needs to hold
+     * <code>MonitorPermission</code> for all the specified target
+     * <code>StatusVariable</code>s with the <code>startjob</code> action
+     * present. If the permission's action string specifies a minimal sampling
+     * interval then the <code>schedule</code> parameter should be at least as
+     * great as the value in the action string.
+     *
+     * @param initiator       the identifier of the entity that initiated the job
+     * @param statusVariables the list of <code>StatusVariable</code>s to be
+     *                        monitored, with each <code>StatusVariable</code> name given in
+     *                        [Monitorable_PID]/[StatusVariable_ID] format
+     * @param schedule        the time in seconds between two measurements
+     * @param count           the number of measurements to be taken, or 0 for the
+     *                        measurement to run until explicitly stopped
+     * @return the successfully started job object, cannot be <code>null</code>
+     * @throws java.lang.IllegalArgumentException
+     *                                     if the list of
+     *                                     <code>StatusVariable</code> names contains an invalid or
+     *                                     non-existing <code>StatusVariable</code>; if
+     *                                     <code>initiator</code> is <code>null</code> or empty; or if the
+     *                                     <code>schedule</code> or <code>count</code> parameters are
+     *                                     invalid
+     * @throws java.lang.SecurityException if the caller does not hold
+     *                                     <code>MonitorPermission</code> for all the specified
+     *                                     <code>StatusVariable</code>s, with the <code>startjob</code>
+     *                                     action present, or if the permission does not allow starting the
+     *                                     job with the given frequency
+     */
+    public MonitoringJob startScheduledJob(String initiator, String[] statusVariables, int schedule, int count)
             throws IllegalArgumentException, SecurityException {
-        // todo
-        throw new UnsupportedOperationException("Method is not implemented");
+        if (initiator == null) {
+            throw new IllegalArgumentException("Initiator is null");
+        }
+        if (statusVariables == null) {
+            throw new IllegalArgumentException("StatusVariables are null");
+        }
+        if (schedule <= 0) {
+            throw new IllegalArgumentException("Schedule is invalid: " + count);
+        }
+        if (count < 0) {
+            throw new IllegalArgumentException("Count is invalid: " + count);
+        }
+        for (String path : statusVariables) {
+            StatusVariablePath statusVariablePath = new StatusVariablePath(path);
+            Monitorable monitorable = findMonitorableById(statusVariablePath.getMonitorableId());
+            if (!new HashSet<String>(Arrays.asList(monitorable.getStatusVariableNames()))
+                    .contains(statusVariablePath.getStatusVariableId())) {
+                throw new IllegalArgumentException("StatusVariable: " + path + " is non-existing");
+            }
+        }
+
+        ScheduledMonitoringJob job = new ScheduledMonitoringJob(this, initiator, statusVariables, schedule, count);
+        synchronized (jobs) {
+            jobs.add(job);
+        }
+        return job;
     }
 
+    /**
+     * Starts a change based <code>MonitoringJob</code> with the parameters
+     * provided. Monitoring events will be sent when the
+     * <code>StatusVariable</code>s of this job are updated. All specified
+     * <code>StatusVariable</code>s must exist when the job is started, and
+     * all must support update notifications. The initiator string is used in
+     * the <code>mon.listener.id</code> field of all events triggered by the
+     * job, to allow filtering the events based on the initiator.
+     * <p/>
+     * The <code>count</code> parameter specifies the number of changes that
+     * must happen to a <code>StatusVariable</code> before a new notification is
+     * sent, this must be a positive integer.
+     * <p/>
+     * The entity which initiates a <code>MonitoringJob</code> needs to hold
+     * <code>MonitorPermission</code> for all the specified target
+     * <code>StatusVariable</code>s with the <code>startjob</code> action
+     * present.
+     *
+     * @param initiator       the identifier of the entity that initiated the job
+     * @param statusVariables the list of <code>StatusVariable</code>s to be
+     *                        monitored, with each <code>StatusVariable</code> name given in
+     *                        [Monitorable_PID]/[StatusVariable_ID] format
+     * @param count           the number of changes that must happen to a
+     *                        <code>StatusVariable</code> before a new notification is sent
+     * @return the successfully started job object, cannot be <code>null</code>
+     * @throws java.lang.IllegalArgumentException
+     *                                     if the list of
+     *                                     <code>StatusVariable</code> names contains an invalid or
+     *                                     non-existing <code>StatusVariable</code>, or one that does not
+     *                                     support notifications; if the <code>initiator</code> is
+     *                                     <code>null</code> or empty; or if <code>count</code> is invalid
+     * @throws java.lang.SecurityException if the caller does not hold
+     *                                     <code>MonitorPermission</code> for all the specified
+     *                                     <code>StatusVariable</code>s, with the <code>startjob</code>
+     *                                     action present
+     */
     public MonitoringJob startJob(String initiator, String[] statusVariables, int count)
             throws IllegalArgumentException, SecurityException {
-        // todo
-        throw new UnsupportedOperationException("Method is not implemented");
+        if (initiator == null) {
+            throw new IllegalArgumentException("Initiator is null");
+        }
+        if (statusVariables == null) {
+            throw new IllegalArgumentException("StatusVariables are null");
+        }
+        if (count <= 0) {
+            throw new IllegalArgumentException("Count is invalid: " + count);
+        }
+        for (String path : statusVariables) {
+            StatusVariablePath statusVariablePath = new StatusVariablePath(path);
+            Monitorable monitorable = findMonitorableById(statusVariablePath.getMonitorableId());
+            if (!monitorable.notifiesOnChange(statusVariablePath.getStatusVariableId())) {
+                throw new IllegalArgumentException("StatusVariable: " + path + " does not support notifications");
+            }
+        }
+        SubscriptionMonitoringJob job = new SubscriptionMonitoringJob(this, initiator, statusVariables, count);
+        synchronized (jobs) {
+            jobs.add(job);
+        }
+        return job;
     }
 
     /**
@@ -351,9 +474,10 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
 
     /**
      * Fire StatusVariable update event
-     * @param monitorableId monitorableId
+     *
+     * @param monitorableId  monitorableId
      * @param statusVariable status variable
-     * @param initiator initiator. if <code>null</code> - is not added to event 
+     * @param initiator      initiator. if <code>null</code> - is not added to event
      */
     public void fireEvent(String monitorableId, StatusVariable statusVariable, String initiator) {
         Dictionary<String, String> eventProperties = new Hashtable<String, String>();
@@ -398,6 +522,7 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
             job.cancel();
         }
     }
+
     /**
      * Find Monitorable service by monitorable Id. Returns Monitorable service or
      * throws exception.
@@ -450,10 +575,10 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
             synchronized (jobs) {
                 Iterator<AbstractMonitoringJob> iterator = jobs.iterator();
                 while (iterator.hasNext()) {
-                        AbstractMonitoringJob job = iterator.next();
-                        job.cancel();
-                        iterator.remove();
-                    }
+                    AbstractMonitoringJob job = iterator.next();
+                    job.cancel();
+                    iterator.remove();
+                }
             }
         }
     }
