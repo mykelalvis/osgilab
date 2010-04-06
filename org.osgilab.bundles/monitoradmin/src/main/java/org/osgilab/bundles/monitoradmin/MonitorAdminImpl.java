@@ -265,10 +265,67 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
         return monitorable.resetStatusVariable(statusVariablePath.getStatusVariableId());
     }
 
+    /**
+     * Switches event sending on or off for the specified
+     * <code>StatusVariable</code>s. When the <code>MonitorAdmin</code> is
+     * notified about a <code>StatusVariable</code> being updated it sends an
+     * event unless this feature is switched off. Note that events within a
+     * monitoring job can not be switched off. The event sending state of the
+     * <code>StatusVariables</code> must not be persistently stored. When a
+     * <code>StatusVariable</code> is registered for the first time in a
+     * framework session, its event sending state is set to ON by default.
+     * <p/>
+     * Usage of the "*" wildcard is allowed in the path argument of this method
+     * as a convenience feature. The wildcard can be used in either or both path
+     * fragments, but only at the end of the fragments.  The semantics of the
+     * wildcard is that it stands for any matching <code>StatusVariable</code>
+     * at the time of the method call, it does not affect the event sending
+     * status of <code>StatusVariable</code>s which are not yet registered. As
+     * an example, when the <code>switchEvents("MyMonitorable/*", false)</code>
+     * method is executed, event sending from all <code>StatusVariables</code>
+     * of the MyMonitorable service are switched off. However, if the
+     * MyMonitorable service starts to publish a new <code>StatusVariable</code>
+     * later, it's event sending status is on by default.
+     *
+     * @param path the identifier of the <code>StatusVariable</code>(s) in
+     *             [Monitorable_id]/[StatusVariable_id] format, possibly with the
+     *             "*" wildcard at the end of either path fragment
+     * @param on   <code>false</code> if event sending should be switched off,
+     *             <code>true</code> if it should be switched on for the given path
+     * @throws java.lang.SecurityException if the caller does not hold
+     *                                     <code>MonitorPermission</code> with the
+     *                                     <code>switchevents</code> action or if there is any
+     *                                     <code>StatusVariable</code> in the <code>path</code> field for
+     *                                     which it is not allowed to switch event sending on or off as per
+     *                                     the target field of the permission
+     * @throws java.lang.IllegalArgumentException
+     *                                     if <code>path</code> is
+     *                                     <code>null</code> or otherwise invalid, or points to a
+     *                                     non-existing <code>StatusVariable</code>
+     */
     public void switchEvents(String path, boolean on)
             throws IllegalArgumentException, SecurityException {
-        // todo
-        throw new UnsupportedOperationException("Method is not implemented");
+        StatusVariablePathFilter filter = new StatusVariablePathFilter(path);
+
+        if (on) {
+            Iterator<String> iterator = disabledPaths.iterator();
+            while (iterator.hasNext()) {
+                StatusVariablePath statusVariablePath = new StatusVariablePath(iterator.next());
+                if (filter.isIncluded(statusVariablePath.getMonitorableId(), statusVariablePath.getStatusVariableId())) {
+                    iterator.remove();
+                }
+            }
+        } else {
+            String[] monitorableNames = getMonitorableNames();
+            for (String monitorableId : monitorableNames) {
+                String[] statusVariableNames = getStatusVariableNames(monitorableId);
+                for (String statusVariableId : statusVariableNames) {
+                    if (filter.isIncluded(monitorableId, statusVariableId)) {
+                        disabledPaths.add(monitorableId + '/' + statusVariableId);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -543,7 +600,7 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
             throw new IllegalArgumentException("MonitorableId is null");
         }
 
-        if (!Utils.validateId(monitorableId)) {
+        if (!Utils.validatePathId(monitorableId)) {
             throw new IllegalArgumentException("MonitorableId is invalid");
         }
 
