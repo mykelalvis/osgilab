@@ -21,7 +21,7 @@ public abstract class AbstractMonitoringJob implements MonitoringJob {
     protected MonitoringJobVisitor visitor;
     private String initiator;
     protected Set<String> statusVariablePaths = new HashSet<String>();
-    private boolean isRunning;
+    protected boolean isRunning;
     protected int schedule = 0;
     protected int count = 0;
 

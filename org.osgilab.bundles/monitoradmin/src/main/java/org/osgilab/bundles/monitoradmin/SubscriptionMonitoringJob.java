@@ -29,7 +29,7 @@ public class SubscriptionMonitoringJob extends AbstractMonitoringJob {
 
     @Override
     public void cancel() {
-        // do nothing
+        isRunning = false;   
     }
 
     @Override
