@@ -22,7 +22,7 @@ import java.util.*;
  *
  * @author dmytro.pishchukhin
  */
-public class MonitorAdminImpl implements MonitorAdmin, MonitorListener {
+public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, MonitoringJobVisitor {
     private BundleContext bc;
 
     /**
@@ -31,6 +31,8 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener {
     private Set<String> disabledPaths = new HashSet<String>();
     private ServiceTracker eventAdminTracker;
     private ServiceTracker logServiceTracker;
+
+    private final List<AbstractMonitoringJob> jobs = new ArrayList<AbstractMonitoringJob>();
 
     public MonitorAdminImpl(BundleContext bc) {
         this.bc = bc;
@@ -45,7 +47,8 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener {
     }
 
     public void uninit() {
-        // todo: stop running jobs
+        cancelJobs();
+
         eventAdminTracker.close();
         eventAdminTracker = null;
 
@@ -281,9 +284,31 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener {
         throw new UnsupportedOperationException("Method is not implemented");
     }
 
+    /**
+     * Returns the list of currently running <code>MonitoringJob</code>s.
+     * Jobs are only visible to callers that have the necessary permissions: to
+     * receive a Monitoring Job in the returned list, the caller must hold all
+     * permissions required for starting the job.  This means that if the caller
+     * does not have <code>MonitorPermission</code> with the proper
+     * <code>startjob</code> action for all the Status Variables monitored by a
+     * job, then that job will be silently omitted from the results.
+     * <p/>
+     * The returned array cannot be <code>null</code>, an empty array is
+     * returned if there are no running jobs visible to the caller at the time
+     * of the call.
+     *
+     * @return the list of running jobs visible to the caller
+     */
     public MonitoringJob[] getRunningJobs() {
-        // todo
-        throw new UnsupportedOperationException("Method is not implemented");
+        List<MonitoringJob> runningJobs = new ArrayList<MonitoringJob>();
+        synchronized (jobs) {
+            for (AbstractMonitoringJob job : jobs) {
+                if (job.isRunning()) {
+                    runningJobs.add(job);
+                }
+            }
+        }
+        return runningJobs.toArray(new MonitoringJob[runningJobs.size()]);
     }
 
     /**
@@ -304,17 +329,33 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener {
         if (statusVariable == null) {
             throw new IllegalArgumentException("StatusVariable is null");
         }
-        if (isEventEnabled(monitorableId + '/' + statusVariable.getID())) {
+        StatusVariablePath path = new StatusVariablePath(monitorableId, statusVariable.getID());
+        if (isEventEnabled(path.getPath())) {
             fireEvent(monitorableId, statusVariable, null);
         }
-        // todo: fire event for jobs
+        // find jobs that handle this StatusVariable update event
+        if (!jobs.isEmpty()) {
+            synchronized (jobs) {
+                for (AbstractMonitoringJob job : jobs) {
+                    if (job.isHandleUpdateEvent(path.getPath())) {
+                        job.handleUpdateEvent(monitorableId, statusVariable);
+                    }
+                }
+            }
+        }
     }
 
     private boolean isEventEnabled(String path) {
         return !disabledPaths.contains(path);
     }
 
-    private void fireEvent(String monitorableId, StatusVariable statusVariable, String initiator) {
+    /**
+     * Fire StatusVariable update event
+     * @param monitorableId monitorableId
+     * @param statusVariable status variable
+     * @param initiator initiator. if <code>null</code> - is not added to event 
+     */
+    public void fireEvent(String monitorableId, StatusVariable statusVariable, String initiator) {
         Dictionary<String, String> eventProperties = new Hashtable<String, String>();
         eventProperties.put(ConstantsMonitorAdmin.MON_MONITORABLE_PID, monitorableId);
         eventProperties.put(ConstantsMonitorAdmin.MON_STATUSVARIABLE_NAME, statusVariable.getID());
@@ -346,6 +387,17 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener {
         }
     }
 
+    /**
+     * Cancel Job and remove it from jobs list
+     *
+     * @param job job to cancel
+     */
+    public void cancelJob(AbstractMonitoringJob job) {
+        synchronized (jobs) {
+            jobs.remove(job);
+            job.cancel();
+        }
+    }
     /**
      * Find Monitorable service by monitorable Id. Returns Monitorable service or
      * throws exception.
@@ -391,5 +443,18 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener {
             throw new IllegalArgumentException("Monitorable ID: " + monitorableId + " points to non-existing service");
         }
         return (Monitorable) bc.getService(mostSuitableMonitorable);
+    }
+
+    private void cancelJobs() {
+        if (!jobs.isEmpty()) {
+            synchronized (jobs) {
+                Iterator<AbstractMonitoringJob> iterator = jobs.iterator();
+                while (iterator.hasNext()) {
+                        AbstractMonitoringJob job = iterator.next();
+                        job.cancel();
+                        iterator.remove();
+                    }
+            }
+        }
     }
 }

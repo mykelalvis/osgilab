@@ -13,6 +13,7 @@ package org.osgilab.bundles.monitoradmin;
 public class StatusVariablePath {
     private String monitorableId;
     private String statusVariableId;
+    private String path;
 
     /**
      * Initialize object and parse input path value
@@ -21,8 +22,33 @@ public class StatusVariablePath {
      */
     public StatusVariablePath(String path) throws IllegalArgumentException {
         String[] ids = parseIds(path);
+        this.path = path;
         monitorableId = ids[0];
         statusVariableId = ids[1];
+    }
+
+    /**
+     * Initialize object from monitorableId and status variable Id
+     * @param monitorableId monitorableId value
+     * @param statusVariableId status variable Id value
+     * @throws IllegalArgumentException ids are <code>null</code> or invalid;
+     */
+    public StatusVariablePath(String monitorableId, String statusVariableId) throws IllegalArgumentException {
+        if (monitorableId == null) {
+            throw new IllegalArgumentException("MonitorableId is null");
+        }
+        if (statusVariableId == null) {
+            throw new IllegalArgumentException("StatusVariableId is null");
+        }
+        if (!Utils.validateId(monitorableId)) {
+            throw new IllegalArgumentException("MonitorableId is invalid");
+        }
+        if (!Utils.validateId(statusVariableId)) {
+            throw new IllegalArgumentException("StatusVariableId is invalid");
+        }
+        this.monitorableId = monitorableId;
+        this.statusVariableId = statusVariableId;
+        path = this.monitorableId + '/' + this.statusVariableId;
     }
 
     public String getMonitorableId() {
@@ -31,6 +57,10 @@ public class StatusVariablePath {
 
     public String getStatusVariableId() {
         return statusVariableId;
+    }
+
+    public String getPath() {
+        return path;
     }
 
     /**
