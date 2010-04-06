@@ -9,10 +9,13 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
+import org.osgi.service.log.LogService;
 import org.osgi.service.monitor.*;
+import org.osgi.util.tracker.ServiceTracker;
 
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * MonitorAdmin implementation
@@ -22,8 +25,32 @@ import java.util.TreeSet;
 public class MonitorAdminImpl implements MonitorAdmin, MonitorListener {
     private BundleContext bc;
 
+    /**
+     * Set of StatusVariable paths for which events are disabled
+     */
+    private Set<String> disabledPaths = new HashSet<String>();
+    private ServiceTracker eventAdminTracker;
+    private ServiceTracker logServiceTracker;
+
     public MonitorAdminImpl(BundleContext bc) {
         this.bc = bc;
+    }
+
+    public void init() {
+        logServiceTracker = new ServiceTracker(bc, LogService.class.getName(), null);
+        logServiceTracker.open();
+
+        eventAdminTracker = new ServiceTracker(bc, EventAdmin.class.getName(), null);
+        eventAdminTracker.open();
+    }
+
+    public void uninit() {
+        // todo: stop running jobs
+        eventAdminTracker.close();
+        eventAdminTracker = null;
+
+        logServiceTracker.close();
+        logServiceTracker = null;
     }
 
     /**
@@ -259,9 +286,64 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener {
         throw new UnsupportedOperationException("Method is not implemented");
     }
 
+    /**
+     * Callback for notification of a <code>StatusVariable</code> change.
+     *
+     * @param monitorableId  the identifier of the <code>Monitorable</code>
+     *                       instance reporting the change
+     * @param statusVariable the <code>StatusVariable</code> that has changed
+     * @throws java.lang.IllegalArgumentException
+     *          if the specified monitorable
+     *          ID is invalid (<code>null</code>, empty, or contains illegal
+     *          characters) or points to a non-existing <code>Monitorable</code>,
+     *          or if <code>statusVariable</code> is <code>null</code>
+     */
     public void updated(String monitorableId, StatusVariable statusVariable) throws IllegalArgumentException {
-        // todo
-        throw new UnsupportedOperationException("Method is not implemented");
+        // validate monitorableId
+        findMonitorableById(monitorableId);
+        if (statusVariable == null) {
+            throw new IllegalArgumentException("StatusVariable is null");
+        }
+        if (isEventEnabled(monitorableId + '/' + statusVariable.getID())) {
+            fireEvent(monitorableId, statusVariable, null);
+        }
+        // todo: fire event for jobs
+    }
+
+    private boolean isEventEnabled(String path) {
+        return !disabledPaths.contains(path);
+    }
+
+    private void fireEvent(String monitorableId, StatusVariable statusVariable, String initiator) {
+        Dictionary<String, String> eventProperties = new Hashtable<String, String>();
+        eventProperties.put(ConstantsMonitorAdmin.MON_MONITORABLE_PID, monitorableId);
+        eventProperties.put(ConstantsMonitorAdmin.MON_STATUSVARIABLE_NAME, statusVariable.getID());
+
+        String value = null;
+        switch (statusVariable.getType()) {
+            case StatusVariable.TYPE_BOOLEAN:
+                value = Boolean.toString(statusVariable.getBoolean());
+                break;
+            case StatusVariable.TYPE_FLOAT:
+                value = Float.toString(statusVariable.getFloat());
+                break;
+            case StatusVariable.TYPE_INTEGER:
+                value = Integer.toString(statusVariable.getInteger());
+                break;
+            case StatusVariable.TYPE_STRING:
+                value = statusVariable.getString();
+                break;
+        }
+        eventProperties.put(ConstantsMonitorAdmin.MON_STATUSVARIABLE_VALUE, value);
+        if (initiator != null) {
+            eventProperties.put(ConstantsMonitorAdmin.MON_LISTENER_ID, initiator);
+        }
+
+        Event event = new Event(ConstantsMonitorAdmin.TOPIC, eventProperties);
+        EventAdmin eventAdmin = (EventAdmin) eventAdminTracker.getService();
+        if (eventAdmin != null) {
+            eventAdmin.postEvent(event);
+        }
     }
 
     /**
