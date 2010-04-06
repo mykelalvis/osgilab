@@ -5,23 +5,21 @@
 
 package org.osgilab.bundles.monitoradmin;
 
-import org.osgi.framework.Constants;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.monitor.MonitorAdmin;
-import org.osgi.service.monitor.Monitorable;
-import org.osgi.service.monitor.MonitoringJob;
-import org.osgi.service.monitor.StatusVariable;
+import org.osgi.service.monitor.*;
 
-import java.util.*;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * MonitorAdmin implementation
  *
  * @author dmytro.pishchukhin
  */
-public class MonitorAdminImpl implements MonitorAdmin {
+public class MonitorAdminImpl implements MonitorAdmin, MonitorListener {
     private BundleContext bc;
 
     public MonitorAdminImpl(BundleContext bc) {
@@ -48,11 +46,10 @@ public class MonitorAdminImpl implements MonitorAdmin {
      */
     public StatusVariable getStatusVariable(String path)
             throws IllegalArgumentException, SecurityException {
-        String monitorableId = Utils.parseMonitorableIdFromPath(path);
-        Monitorable monitorable = findMonitorableById(monitorableId);
+        StatusVariablePath statusVariablePath = new StatusVariablePath(path);
+        Monitorable monitorable = findMonitorableById(statusVariablePath.getMonitorableId());
 
-        String statusVariableId = Utils.parseStatusVariableIdFromPath(path);
-        return monitorable.getStatusVariable(statusVariableId);
+        return monitorable.getStatusVariable(statusVariablePath.getStatusVariableId());
     }
 
     /**
@@ -80,11 +77,10 @@ public class MonitorAdminImpl implements MonitorAdmin {
      */
     public String getDescription(String path)
             throws IllegalArgumentException, SecurityException {
-        String monitorableId = Utils.parseMonitorableIdFromPath(path);
-        Monitorable monitorable = findMonitorableById(monitorableId);
+        StatusVariablePath statusVariablePath = new StatusVariablePath(path);
+        Monitorable monitorable = findMonitorableById(statusVariablePath.getMonitorableId());
 
-        String statusVariableId = Utils.parseStatusVariableIdFromPath(path);
-        return monitorable.getDescription(statusVariableId);
+        return monitorable.getDescription(statusVariablePath.getStatusVariableId());
     }
 
     /**
@@ -202,13 +198,44 @@ public class MonitorAdminImpl implements MonitorAdmin {
         return monitorable.getStatusVariableNames();
     }
 
-    public void switchEvents(String path, boolean on)
+    /**
+     * Issues a request to reset a given <code>StatusVariable</code>.
+     * Depending on the semantics of the <code>StatusVariable</code> this call
+     * may or may not succeed: it makes sense to reset a counter to its starting
+     * value, but e.g. a <code>StatusVariable</code> of type String might not
+     * have a meaningful default value. Note that for numeric
+     * <code>StatusVariable</code>s the starting value may not necessarily be
+     * 0. Resetting a <code>StatusVariable</code> triggers a monitor event if
+     * the <code>StatusVariable</code> supports update notifications.
+     * <p/>
+     * The entity that wants to reset the <code>StatusVariable</code> needs to
+     * hold <code>MonitorPermission</code> with the <code>reset</code>
+     * action present. The target field of the permission must match the
+     * <code>StatusVariable</code> name to be reset.
+     *
+     * @param path the identifier of the <code>StatusVariable</code> in
+     *             [Monitorable_id]/[StatusVariable_id] format
+     * @return <code>true</code> if the <code>Monitorable</code> could
+     *         successfully reset the given <code>StatusVariable</code>,
+     *         <code>false</code> otherwise
+     * @throws java.lang.IllegalArgumentException
+     *                                     if <code>path</code> is
+     *                                     <code>null</code> or otherwise invalid, or points to a
+     *                                     non-existing <code>StatusVariable</code>
+     * @throws java.lang.SecurityException if the caller does not hold
+     *                                     <code>MonitorPermission</code> with the <code>reset</code>
+     *                                     action or if the specified <code>StatusVariable</code> is not
+     *                                     allowed to be reset as per the target field of the permission
+     */
+    public boolean resetStatusVariable(String path)
             throws IllegalArgumentException, SecurityException {
-        // todo
-        throw new UnsupportedOperationException("Method is not implemented");
+        StatusVariablePath statusVariablePath = new StatusVariablePath(path);
+        Monitorable monitorable = findMonitorableById(statusVariablePath.getMonitorableId());
+
+        return monitorable.resetStatusVariable(statusVariablePath.getStatusVariableId());
     }
 
-    public boolean resetStatusVariable(String path)
+    public void switchEvents(String path, boolean on)
             throws IllegalArgumentException, SecurityException {
         // todo
         throw new UnsupportedOperationException("Method is not implemented");
@@ -228,6 +255,11 @@ public class MonitorAdminImpl implements MonitorAdmin {
     }
 
     public MonitoringJob[] getRunningJobs() {
+        // todo
+        throw new UnsupportedOperationException("Method is not implemented");
+    }
+
+    public void updated(String monitorableId, StatusVariable statusVariable) throws IllegalArgumentException {
         // todo
         throw new UnsupportedOperationException("Method is not implemented");
     }
