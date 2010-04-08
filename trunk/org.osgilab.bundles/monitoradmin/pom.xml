@@ -8,7 +8,7 @@
 
     <groupId>org.osgilab.bundles</groupId>
     <artifactId>monitoradmin</artifactId>
-    <version>1.0.0-beta-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>bundle</packaging>
     <name>OSGi Lab MonitorAdmin</name>
     <description>OSGi MonitorAdmin API Reference Implementation</description>
