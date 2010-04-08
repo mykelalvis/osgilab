@@ -3,7 +3,7 @@
  * This program is made available under the terms of the MIT License.
  */
 
-package org.osgilab.bundles.monitoradmin;
+package org.osgilab.bundles.monitoradmin.job;
 
 import org.osgi.service.monitor.StatusVariable;
 

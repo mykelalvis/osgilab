@@ -3,9 +3,11 @@
  * This program is made available under the terms of the MIT License.
  */
 
-package org.osgilab.bundles.monitoradmin;
+package org.osgilab.bundles.monitoradmin.job;
 
 import org.osgi.service.monitor.StatusVariable;
+import org.osgilab.bundles.monitoradmin.LogVisitor;
+import org.osgilab.bundles.monitoradmin.util.StatusVariablePath;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,9 +22,9 @@ public class ScheduledMonitoringJob extends AbstractMonitoringJob implements Run
     private int measurementsTaken = 0;
     private ExecutorService executorService;
 
-    protected ScheduledMonitoringJob(MonitoringJobVisitor visitor, String initiator,
+    public ScheduledMonitoringJob(MonitoringJobVisitor visitor, LogVisitor logVisitor, String initiator,
                                      String[] statusVariablePaths, int schedule, int count) {
-        super(visitor, initiator, statusVariablePaths, schedule, count);
+        super(visitor, logVisitor, initiator, statusVariablePaths, schedule, count);
         executorService = Executors.newSingleThreadExecutor();
         executorService.submit(this);
     }
@@ -31,6 +33,7 @@ public class ScheduledMonitoringJob extends AbstractMonitoringJob implements Run
     public void cancel() {
         isRunning = false;
         executorService.shutdownNow();
+        logVisitor.info("Job Canceled: " + this, null);
     }
 
     @Override

@@ -3,9 +3,11 @@
  * This program is made available under the terms of the MIT License.
  */
 
-package org.osgilab.bundles.monitoradmin;
+package org.osgilab.bundles.monitoradmin.job;
 
 import org.osgi.service.monitor.StatusVariable;
+import org.osgilab.bundles.monitoradmin.LogVisitor;
+import org.osgilab.bundles.monitoradmin.util.StatusVariablePath;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,9 +20,9 @@ import java.util.Map;
 public class SubscriptionMonitoringJob extends AbstractMonitoringJob {
     private Map<String, Integer> countStatesMap = new HashMap<String, Integer>();
 
-    protected SubscriptionMonitoringJob(MonitoringJobVisitor visitor, String initiator,
+    public SubscriptionMonitoringJob(MonitoringJobVisitor visitor, LogVisitor logVisitor, String initiator,
                                         String[] statusVariablePaths, int count) {
-        super(visitor, initiator, statusVariablePaths, count);
+        super(visitor, logVisitor, initiator, statusVariablePaths, count);
         // initialize counts map
         for (String statusVariablePath : statusVariablePaths) {
             countStatesMap.put(statusVariablePath, 0);
@@ -30,6 +32,7 @@ public class SubscriptionMonitoringJob extends AbstractMonitoringJob {
     @Override
     public void cancel() {
         isRunning = false;   
+        logVisitor.info("Job Canceled: " + this, null);
     }
 
     @Override

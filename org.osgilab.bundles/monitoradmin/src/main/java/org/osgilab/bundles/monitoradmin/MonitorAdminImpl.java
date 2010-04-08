@@ -5,15 +5,17 @@
 
 package org.osgilab.bundles.monitoradmin;
 
-import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
-import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.event.Event;
-import org.osgi.service.event.EventAdmin;
-import org.osgi.service.log.LogService;
 import org.osgi.service.monitor.*;
-import org.osgi.util.tracker.ServiceTracker;
+import org.osgilab.bundles.monitoradmin.job.AbstractMonitoringJob;
+import org.osgilab.bundles.monitoradmin.job.MonitoringJobVisitor;
+import org.osgilab.bundles.monitoradmin.job.ScheduledMonitoringJob;
+import org.osgilab.bundles.monitoradmin.job.SubscriptionMonitoringJob;
+import org.osgilab.bundles.monitoradmin.util.StatusVariablePath;
+import org.osgilab.bundles.monitoradmin.util.StatusVariablePathFilter;
+import org.osgilab.bundles.monitoradmin.util.Utils;
 
 import java.util.*;
 
@@ -23,37 +25,17 @@ import java.util.*;
  * @author dmytro.pishchukhin
  */
 public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, MonitoringJobVisitor {
-    private BundleContext bc;
-
     /**
      * Set of StatusVariable paths for which events are disabled
      */
     private Set<String> disabledPaths = new HashSet<String>();
-    private ServiceTracker eventAdminTracker;
-    private ServiceTracker logServiceTracker;
-
     private final List<AbstractMonitoringJob> jobs = new ArrayList<AbstractMonitoringJob>();
+    private OsgiVisitor osgiVisitor;
+    private LogVisitor logVisitor;
 
-    public MonitorAdminImpl(BundleContext bc) {
-        this.bc = bc;
-    }
-
-    public void init() {
-        logServiceTracker = new ServiceTracker(bc, LogService.class.getName(), null);
-        logServiceTracker.open();
-
-        eventAdminTracker = new ServiceTracker(bc, EventAdmin.class.getName(), null);
-        eventAdminTracker.open();
-    }
-
-    public void uninit() {
-        cancelJobs();
-
-        eventAdminTracker.close();
-        eventAdminTracker = null;
-
-        logServiceTracker.close();
-        logServiceTracker = null;
+    public MonitorAdminImpl(OsgiVisitor osgiVisitor, LogVisitor logVisitor) {
+        this.osgiVisitor = osgiVisitor;
+        this.logVisitor = logVisitor;
     }
 
     /**
@@ -76,10 +58,15 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
      */
     public StatusVariable getStatusVariable(String path)
             throws IllegalArgumentException, SecurityException {
-        StatusVariablePath statusVariablePath = new StatusVariablePath(path);
-        Monitorable monitorable = findMonitorableById(statusVariablePath.getMonitorableId());
+        logVisitor.debug("ENTRY: getStatusVariable: " + path, null);
+        try {
+            StatusVariablePath statusVariablePath = new StatusVariablePath(path);
+            Monitorable monitorable = findMonitorableById(statusVariablePath.getMonitorableId());
 
-        return monitorable.getStatusVariable(statusVariablePath.getStatusVariableId());
+            return monitorable.getStatusVariable(statusVariablePath.getStatusVariableId());
+        } finally {
+            logVisitor.debug("EXIT: getStatusVariable: " + path, null);
+        }
     }
 
     /**
@@ -107,10 +94,15 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
      */
     public String getDescription(String path)
             throws IllegalArgumentException, SecurityException {
-        StatusVariablePath statusVariablePath = new StatusVariablePath(path);
-        Monitorable monitorable = findMonitorableById(statusVariablePath.getMonitorableId());
+        logVisitor.debug("ENTRY: getDescription: " + path, null);
+        try {
+            StatusVariablePath statusVariablePath = new StatusVariablePath(path);
+            Monitorable monitorable = findMonitorableById(statusVariablePath.getMonitorableId());
 
-        return monitorable.getDescription(statusVariablePath.getStatusVariableId());
+            return monitorable.getDescription(statusVariablePath.getStatusVariableId());
+        } finally {
+            logVisitor.debug("EXIT: getDescription: " + path, null);
+        }
     }
 
     /**
@@ -128,26 +120,26 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
      * @return the array of <code>Monitorable</code> names
      */
     public String[] getMonitorableNames() {
-        // sorted set that contains Monitorable SERVICE_PIDs
-        SortedSet<String> names = new TreeSet<String>();
-
-        ServiceReference[] serviceReferences = null;
+        logVisitor.debug("ENTRY: getMonitorableNames", null);
         try {
-            serviceReferences = bc.getServiceReferences(Monitorable.class.getName(), null);
-        } catch (InvalidSyntaxException e) {
-            // illegal state as filter is null
-        }
+            // sorted set that contains Monitorable SERVICE_PIDs
+            SortedSet<String> names = new TreeSet<String>();
 
-        if (serviceReferences != null) {
-            for (ServiceReference serviceReference : serviceReferences) {
-                String pid = (String) serviceReference.getProperty(Constants.SERVICE_PID);
-                if (pid != null) {
-                    names.add(pid);
+            ServiceReference[] serviceReferences = osgiVisitor.findMonitorableReferences(null);
+
+            if (serviceReferences != null) {
+                for (ServiceReference serviceReference : serviceReferences) {
+                    String pid = (String) serviceReference.getProperty(Constants.SERVICE_PID);
+                    if (pid != null) {
+                        names.add(pid);
+                    }
                 }
             }
-        }
 
-        return names.toArray(new String[names.size()]);
+            return names.toArray(new String[names.size()]);
+        } finally {
+            logVisitor.debug("EXIT: getMonitorableNames", null);
+        }
     }
 
     /**
@@ -181,16 +173,21 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
      */
     public StatusVariable[] getStatusVariables(String monitorableId)
             throws IllegalArgumentException {
-        Monitorable monitorable = findMonitorableById(monitorableId);
+        logVisitor.debug("ENTRY: getStatusVariables: " + monitorableId, null);
+        try {
+            Monitorable monitorable = findMonitorableById(monitorableId);
 
-        String[] names = monitorable.getStatusVariableNames();
-        StatusVariable[] variables = new StatusVariable[names.length];
+            String[] names = monitorable.getStatusVariableNames();
+            StatusVariable[] variables = new StatusVariable[names.length];
 
-        for (int i = 0; i < names.length; i++) {
-            variables[i] = monitorable.getStatusVariable(names[i]);
+            for (int i = 0; i < names.length; i++) {
+                variables[i] = monitorable.getStatusVariable(names[i]);
+            }
+
+            return variables;
+        } finally {
+            logVisitor.debug("EXIT: getStatusVariables: " + monitorableId, null);
         }
-
-        return variables;
     }
 
     /**
@@ -223,9 +220,14 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
      */
     public String[] getStatusVariableNames(String monitorableId)
             throws IllegalArgumentException {
-        Monitorable monitorable = findMonitorableById(monitorableId);
+        logVisitor.debug("ENTRY: getStatusVariableNames: " + monitorableId, null);
+        try {
+            Monitorable monitorable = findMonitorableById(monitorableId);
 
-        return monitorable.getStatusVariableNames();
+            return monitorable.getStatusVariableNames();
+        } finally {
+            logVisitor.debug("EXIT: getStatusVariableNames: " + monitorableId, null);
+        }
     }
 
     /**
@@ -259,10 +261,15 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
      */
     public boolean resetStatusVariable(String path)
             throws IllegalArgumentException, SecurityException {
-        StatusVariablePath statusVariablePath = new StatusVariablePath(path);
-        Monitorable monitorable = findMonitorableById(statusVariablePath.getMonitorableId());
+        logVisitor.debug("ENTRY: resetStatusVariable: " + path, null);
+        try {
+            StatusVariablePath statusVariablePath = new StatusVariablePath(path);
+            Monitorable monitorable = findMonitorableById(statusVariablePath.getMonitorableId());
 
-        return monitorable.resetStatusVariable(statusVariablePath.getStatusVariableId());
+            return monitorable.resetStatusVariable(statusVariablePath.getStatusVariableId());
+        } finally {
+            logVisitor.debug("EXIT: resetStatusVariable: " + path, null);
+        }
     }
 
     /**
@@ -305,26 +312,38 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
      */
     public void switchEvents(String path, boolean on)
             throws IllegalArgumentException, SecurityException {
-        StatusVariablePathFilter filter = new StatusVariablePathFilter(path);
-
-        if (on) {
-            Iterator<String> iterator = disabledPaths.iterator();
-            while (iterator.hasNext()) {
-                StatusVariablePath statusVariablePath = new StatusVariablePath(iterator.next());
-                if (filter.isIncluded(statusVariablePath.getMonitorableId(), statusVariablePath.getStatusVariableId())) {
-                    iterator.remove();
+        logVisitor.debug("ENTRY: switchEvents: " + path + ", " + on, null);
+        try {
+            StatusVariablePathFilter filter = new StatusVariablePathFilter(path);
+            // check StatusVariable if filter does not contain wildcards
+            if (!filter.isMonitorableWildcard()) {
+                Monitorable monitorable = findMonitorableById(filter.getMonitorableId());
+                if (!filter.isStatusVariableWildcard()) {
+                    monitorable.getStatusVariable(filter.getStatusVariableId());
                 }
             }
-        } else {
-            String[] monitorableNames = getMonitorableNames();
-            for (String monitorableId : monitorableNames) {
-                String[] statusVariableNames = getStatusVariableNames(monitorableId);
-                for (String statusVariableId : statusVariableNames) {
-                    if (filter.isIncluded(monitorableId, statusVariableId)) {
-                        disabledPaths.add(monitorableId + '/' + statusVariableId);
+
+            if (on) {
+                Iterator<String> iterator = disabledPaths.iterator();
+                while (iterator.hasNext()) {
+                    StatusVariablePath statusVariablePath = new StatusVariablePath(iterator.next());
+                    if (filter.isIncluded(statusVariablePath.getMonitorableId(), statusVariablePath.getStatusVariableId())) {
+                        iterator.remove();
+                    }
+                }
+            } else {
+                String[] monitorableNames = getMonitorableNames();
+                for (String monitorableId : monitorableNames) {
+                    String[] statusVariableNames = getStatusVariableNames(monitorableId);
+                    for (String statusVariableId : statusVariableNames) {
+                        if (filter.isIncluded(monitorableId, statusVariableId)) {
+                            disabledPaths.add(monitorableId + '/' + statusVariableId);
+                        }
                     }
                 }
             }
+        } finally {
+            logVisitor.debug("EXIT: switchEvents: " + path + ", " + on, null);
         }
     }
 
@@ -375,32 +394,39 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
      */
     public MonitoringJob startScheduledJob(String initiator, String[] statusVariables, int schedule, int count)
             throws IllegalArgumentException, SecurityException {
-        if (initiator == null) {
-            throw new IllegalArgumentException("Initiator is null");
-        }
-        if (statusVariables == null) {
-            throw new IllegalArgumentException("StatusVariables are null");
-        }
-        if (schedule <= 0) {
-            throw new IllegalArgumentException("Schedule is invalid: " + count);
-        }
-        if (count < 0) {
-            throw new IllegalArgumentException("Count is invalid: " + count);
-        }
-        for (String path : statusVariables) {
-            StatusVariablePath statusVariablePath = new StatusVariablePath(path);
-            Monitorable monitorable = findMonitorableById(statusVariablePath.getMonitorableId());
-            if (!new HashSet<String>(Arrays.asList(monitorable.getStatusVariableNames()))
-                    .contains(statusVariablePath.getStatusVariableId())) {
-                throw new IllegalArgumentException("StatusVariable: " + path + " is non-existing");
+        logVisitor.debug("ENTRY: startScheduledJob: " + initiator, null);
+        try {
+            if (initiator == null) {
+                throw new IllegalArgumentException("Initiator is null");
             }
-        }
+            if (statusVariables == null) {
+                throw new IllegalArgumentException("StatusVariables are null");
+            }
+            if (schedule <= 0) {
+                throw new IllegalArgumentException("Schedule is invalid: " + count);
+            }
+            if (count < 0) {
+                throw new IllegalArgumentException("Count is invalid: " + count);
+            }
+            for (String path : statusVariables) {
+                StatusVariablePath statusVariablePath = new StatusVariablePath(path);
+                Monitorable monitorable = findMonitorableById(statusVariablePath.getMonitorableId());
+                if (!new HashSet<String>(Arrays.asList(monitorable.getStatusVariableNames()))
+                        .contains(statusVariablePath.getStatusVariableId())) {
+                    throw new IllegalArgumentException("StatusVariable: " + path + " is non-existing");
+                }
+            }
 
-        ScheduledMonitoringJob job = new ScheduledMonitoringJob(this, initiator, statusVariables, schedule, count);
-        synchronized (jobs) {
-            jobs.add(job);
+            ScheduledMonitoringJob job = new ScheduledMonitoringJob(this, logVisitor, initiator,
+                    statusVariables, schedule, count);
+            synchronized (jobs) {
+                jobs.add(job);
+            }
+            logVisitor.info("New Scheduled Job is started: " + initiator, null);
+            return job;
+        } finally {
+            logVisitor.debug("EXIT: startScheduledJob: " + initiator, null);
         }
-        return job;
     }
 
     /**
@@ -441,27 +467,34 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
      */
     public MonitoringJob startJob(String initiator, String[] statusVariables, int count)
             throws IllegalArgumentException, SecurityException {
-        if (initiator == null) {
-            throw new IllegalArgumentException("Initiator is null");
-        }
-        if (statusVariables == null) {
-            throw new IllegalArgumentException("StatusVariables are null");
-        }
-        if (count <= 0) {
-            throw new IllegalArgumentException("Count is invalid: " + count);
-        }
-        for (String path : statusVariables) {
-            StatusVariablePath statusVariablePath = new StatusVariablePath(path);
-            Monitorable monitorable = findMonitorableById(statusVariablePath.getMonitorableId());
-            if (!monitorable.notifiesOnChange(statusVariablePath.getStatusVariableId())) {
-                throw new IllegalArgumentException("StatusVariable: " + path + " does not support notifications");
+        logVisitor.debug("ENTRY: startJob: " + initiator, null);
+        try {
+            if (initiator == null) {
+                throw new IllegalArgumentException("Initiator is null");
             }
+            if (statusVariables == null) {
+                throw new IllegalArgumentException("StatusVariables are null");
+            }
+            if (count <= 0) {
+                throw new IllegalArgumentException("Count is invalid: " + count);
+            }
+            for (String path : statusVariables) {
+                StatusVariablePath statusVariablePath = new StatusVariablePath(path);
+                Monitorable monitorable = findMonitorableById(statusVariablePath.getMonitorableId());
+                if (!monitorable.notifiesOnChange(statusVariablePath.getStatusVariableId())) {
+                    throw new IllegalArgumentException("StatusVariable: " + path + " does not support notifications");
+                }
+            }
+            SubscriptionMonitoringJob job = new SubscriptionMonitoringJob(this, logVisitor, initiator,
+                    statusVariables, count);
+            synchronized (jobs) {
+                jobs.add(job);
+            }
+            logVisitor.info("New Subscription Job is started: " + initiator, null);
+            return job;
+        } finally {
+            logVisitor.debug("EXIT: startJob: " + initiator, null);
         }
-        SubscriptionMonitoringJob job = new SubscriptionMonitoringJob(this, initiator, statusVariables, count);
-        synchronized (jobs) {
-            jobs.add(job);
-        }
-        return job;
     }
 
     /**
@@ -480,15 +513,20 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
      * @return the list of running jobs visible to the caller
      */
     public MonitoringJob[] getRunningJobs() {
-        List<MonitoringJob> runningJobs = new ArrayList<MonitoringJob>();
-        synchronized (jobs) {
-            for (AbstractMonitoringJob job : jobs) {
-                if (job.isRunning()) {
-                    runningJobs.add(job);
+        logVisitor.debug("ENTRY: getRunningJobs", null);
+        try {
+            List<MonitoringJob> runningJobs = new ArrayList<MonitoringJob>();
+            synchronized (jobs) {
+                for (AbstractMonitoringJob job : jobs) {
+                    if (job.isRunning()) {
+                        runningJobs.add(job);
+                    }
                 }
             }
+            return runningJobs.toArray(new MonitoringJob[runningJobs.size()]);
+        } finally {
+            logVisitor.debug("EXIT: getRunningJobs", null);
         }
-        return runningJobs.toArray(new MonitoringJob[runningJobs.size()]);
     }
 
     /**
@@ -512,6 +550,7 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
         StatusVariablePath path = new StatusVariablePath(monitorableId, statusVariable.getID());
         if (isEventEnabled(path.getPath())) {
             fireEvent(monitorableId, statusVariable, null);
+            logVisitor.info("Fire new SV update Event: " + path.getPath(), null);
         }
         // find jobs that handle this StatusVariable update event
         if (!jobs.isEmpty()) {
@@ -523,6 +562,14 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
                 }
             }
         }
+    }
+
+    /**
+     * Get array with paths that are disabled for notificatios with switchEvents() method
+     * @return array with StatusVariable paths
+     */
+    public String[] getDisabledNotificationPaths() {
+        return disabledPaths.toArray(new String[disabledPaths.size()]);
     }
 
     private boolean isEventEnabled(String path) {
@@ -562,10 +609,7 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
         }
 
         Event event = new Event(ConstantsMonitorAdmin.TOPIC, eventProperties);
-        EventAdmin eventAdmin = (EventAdmin) eventAdminTracker.getService();
-        if (eventAdmin != null) {
-            eventAdmin.postEvent(event);
-        }
+        osgiVisitor.postEvent(event);
     }
 
     /**
@@ -605,13 +649,7 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
         }
 
         ServiceReference mostSuitableMonitorable = null;
-        ServiceReference[] serviceReferences = null;
-
-        try {
-            serviceReferences = bc.getServiceReferences(Monitorable.class.getName(), Utils.createServicePidFilter(monitorableId));
-        } catch (InvalidSyntaxException e) {
-            // illegal state as filter should be ok (id is valid)
-        }
+        ServiceReference[] serviceReferences = osgiVisitor.findMonitorableReferences(monitorableId);
 
         if (serviceReferences != null) {
             for (ServiceReference serviceReference : serviceReferences) {
@@ -624,19 +662,24 @@ public class MonitorAdminImpl implements MonitorAdmin, MonitorListener, Monitori
         if (mostSuitableMonitorable == null) {
             throw new IllegalArgumentException("Monitorable ID: " + monitorableId + " points to non-existing service");
         }
-        return (Monitorable) bc.getService(mostSuitableMonitorable);
+        return osgiVisitor.getService(mostSuitableMonitorable);
     }
 
-    private void cancelJobs() {
-        if (!jobs.isEmpty()) {
-            synchronized (jobs) {
-                Iterator<AbstractMonitoringJob> iterator = jobs.iterator();
-                while (iterator.hasNext()) {
-                    AbstractMonitoringJob job = iterator.next();
-                    job.cancel();
-                    iterator.remove();
+    public void cancelJobs() {
+        logVisitor.debug("ENTRY: cancelJobs", null);
+        try {
+            if (!jobs.isEmpty()) {
+                synchronized (jobs) {
+                    Iterator<AbstractMonitoringJob> iterator = jobs.iterator();
+                    while (iterator.hasNext()) {
+                        AbstractMonitoringJob job = iterator.next();
+                        job.cancel();
+                        iterator.remove();
+                    }
                 }
             }
+        } finally {
+            logVisitor.debug("ENTRY: cancelJobs", null);
         }
     }
 }
