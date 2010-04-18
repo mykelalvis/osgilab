@@ -1,0 +1,39 @@
+#labels Featured
+= Introduction =
+
+OSGi JMX Management Model Implementation. 
+
+= Details =
+
+Specification reference: [http://www.osgi.org/Download/File?url=/download/r4v42/r4.enterprise.pdf OSGi Service Platform Enterprise Specification 4.2 - 124 JMX Management Model Specification].
+
+API JavaDoc reference: [http://www.osgi.org/javadoc/r4v42/org/osgi/jmx/package-summary.html Here].
+ 
+
+Current version: *1.0.0* (20100418)
+
+Bundle download: [http://osgilab.googlecode.com/files/jmx-1.0.0.jar jmx-1.0.0.jar]
+
+Sources download: [http://osgilab.googlecode.com/files/jmx-1.0.0-sources.jar jmx-1.0.0-sources.jar]  
+
+Javadoc download: [http://osgilab.googlecode.com/files/jmx-1.0.0-javadoc.jar jmx-1.0.0-javadoc.jar]  
+
+Sources browse: [http://code.google.com/p/osgilab/source/browse/tags/jmx-1.0.0 Here] 
+
+Implemented functionality:
+  * org.osgi.jmx.framework.BundleStateMBean
+  * org.osgi.jmx.framework.FrameworkMBean
+  * org.osgi.jmx.framework.PackageStateMBean
+  * org.osgi.jmx.framework.ServiceStateMBean
+  * org.osgi.jmx.service.cm.ConfigurationAdminMBean
+  * org.osgi.jmx.service.permissionadmin.PermissionAdminMBean
+  * org.osgi.jmx.service.provisioning.ProvisioningServiceMBean
+  * org.osgi.jmx.service.useradmin.UserAdminMBean
+
+Optional implemented functionality:
+  * org.osgilab.bundles.jmx.service.monitor.MonitorAdminMBean - MonitorAdmin JMX bean
+
+Logging: OSGi LogService if available, otherwise - java.util.logging
+
+Roadmap: 
+  * redesign to add support of new/existing Compendium Service MBeans as bundle fragments
