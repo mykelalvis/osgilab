@@ -35,5 +35,11 @@ Optional implemented functionality:
 
 Logging: OSGi LogService if available, otherwise - java.util.logging
 
-Roadmap: 
-  * redesign to add support of new/existing Compendium Service MBeans as bundle fragments
+== Source Build Tips ==
+The project depends on OSGi Enterprise API jar that is not uploaded to Central Maven repository. You have to add this artifact manually to your local Maven repository to build sources:
+  # download jar file from [http://www.osgi.org/download/r4v42/osgi.enterprise.jar here]
+  # call *mvn install:install-file -Dfile=osgi.enterprise.jar -DgroupId=org.osgi -DartifactId=org.osgi.enterprise -Dversion=4.2.0 -Dpackaging=jar -DgeneratePom=true*
+
+
+== Roadmap ==
+  * redesign to add support of new/existing Compendium Service MBeans as separate bundles
