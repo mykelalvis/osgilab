@@ -1,6 +1,6 @@
 #labels Featured
-*2010-04-18*: OSGi [JMX] Management Model 1.0.0 bundle is released. 
-
-*2010-04-09*: OSGi MonitorAdmin 1.0.0 bundle is released. 
-
-*2010-03-07*: OSGi Tips&Tricks module is added ([http://code.google.com/p/osgilab/wiki/OSGiTipsAndTricks Tips&Tricks Page]). 
+  *  *2010-04-26*: OSGi [JMX] Management Model 1.0.1 bundle is released. 
+  *  *2010-04-26*: OSGi MonitorAdmin 1.0.1 bundle is released. 
+  *  *2010-04-18*: OSGi [JMX] Management Model 1.0.0 bundle is released. 
+  *  *2010-04-09*: OSGi MonitorAdmin 1.0.0 bundle is released. 
+  *  *2010-03-07*: OSGi Tips&Tricks module is added ([http://code.google.com/p/osgilab/wiki/OSGiTipsAndTricks Tips&Tricks Page]). 
