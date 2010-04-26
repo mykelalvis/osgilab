@@ -10,7 +10,7 @@ Specification reference: [http://www.osgi.org/Download/File?url=/download/r4v42/
 API JavaDoc reference: [http://www.osgi.org/javadoc/r4v42/org/osgi/service/monitor/package-summary.html Here].
  
 
-Current version: *1.0.1* (20100422)
+Current version: *1.0.1* (20100426)
 
 Bundle download: [http://osgilab.googlecode.com/files/monitoradmin-1.0.1.jar monitoradmin-1.0.1.jar]
 
