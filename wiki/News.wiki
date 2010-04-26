@@ -1,6 +1,4 @@
-#summary News page
 #labels Featured
-
 *2010-04-18*: OSGi [JMX] Management Model 1.0.0 bundle is released. 
 
 *2010-04-09*: OSGi MonitorAdmin 1.0.0 bundle is released. 
