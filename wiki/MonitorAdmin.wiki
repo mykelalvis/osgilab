@@ -18,6 +18,15 @@ Sources download: [http://osgilab.googlecode.com/files/monitoradmin-1.0.1-source
 
 Sources browse: [http://code.google.com/p/osgilab/source/browse/tags/monitoradmin-1.0.1 Here] 
 
+Maven Artifact:
+{{{
+<dependency>
+    <groupId>org.osgilab.bundles</groupId>
+    <artifactId>monitoradmin</artifactId>
+    <version>1.0.1</version>
+</dependency>
+}}}
+
 == Changes == 
 *1.0.1*
   * recompile with J2SE5 
