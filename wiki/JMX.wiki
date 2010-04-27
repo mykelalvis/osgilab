@@ -1,9 +1,9 @@
 #labels Featured
-= Introduction =
+== Introduction ==
 
 OSGi JMX Management Model Implementation. 
 
-= Details =
+== Details ==
 
 Specification reference: [http://www.osgi.org/Download/File?url=/download/r4v42/r4.enterprise.pdf OSGi Service Platform Enterprise Specification 4.2 - 124 JMX Management Model Specification].
 
@@ -19,6 +19,15 @@ Sources download: [http://osgilab.googlecode.com/files/jmx-1.0.1-sources.jar jmx
 Javadoc download: [http://osgilab.googlecode.com/files/jmx-1.0.1-javadoc.jar jmx-1.0.1-javadoc.jar]  
 
 Sources browse: [http://code.google.com/p/osgilab/source/browse/tags/jmx-1.0.1 Here] 
+
+Maven Artifact:
+{{{
+<dependency>
+    <groupId>org.osgilab.bundles</groupId>
+    <artifactId>jmx</artifactId>
+    <version>1.0.1</version>
+</dependency>
+}}}
 
 == Changes == 
 *1.0.1*
