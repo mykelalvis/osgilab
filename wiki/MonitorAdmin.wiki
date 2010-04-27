@@ -1,9 +1,9 @@
 #labels Featured
-= Introduction =
+== Introduction ==
 
 OSGi MonitorAdmin Implementation. 
 
-= Details =
+== Details ==
 
 Specification reference: [http://www.osgi.org/Download/File?url=/download/r4v42/r4.cmpn.pdf OSGi Service Platform Service Compendium 4.2 - 119 Monitor Admin Service Specification].
 
