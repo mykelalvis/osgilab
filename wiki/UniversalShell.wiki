@@ -1,12 +1,124 @@
+#labels Featured
+== Introduction ==
 
-= Introduction =
+OSGi Universal Shell Adapters. 
 
-Add your content here.
+== Usage == 
 
+There are two simple steps that should be done by bundle developer to add a new shell command:
 
-= Details =
+1. Add commands definitions to class. Every command is defined as public method with such signature:
+{{{
+public void <command_name>(java.io.PrintWriter out, java.lang.String[] args);
+}}}
+  * out - command output stream
+  * args - command arguments list
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+2. Register Services in BundleContext with definition:
+  * service property *"org.osgilab.tips.shell.group.id"* (*mandatory*, java.lang.String) - unique commands group id. Used by some framework specific shell API that support command groups;
+  * service property *"org.osgilab.tips.shell.group.name"* (*mandatory*, java.lang.String) - commands group name. Used by some framework specific shell API that support command groups;
+  * service property *"org.osgilab.tips.shell.commands"* (*mandatory*, java.lang.String[][]) - commands definition "command_name" -> "command_help";
+  * service object class - could be used any value. It's very useful when commands are included into interface implementation.
+
+Here is a sample of new commands:
+
+1. Commands implementation
+{{{
+public class ShellTestService {
+................
+    public void bndinfo(PrintWriter out, String... args) {
+        if (args == null || args.length != 1) {
+            out.println("Bundle id argument is missed");
+            return;
+        }
+        try {
+            int bundleId = Integer.parseInt(args[0]);
+            Bundle bundle = bc.getBundle(bundleId);
+            if (bundle == null) {
+                out.println("Bundle id is invalid: " + bundleId);
+                return;
+            }
+            printBundleInfo(bundle, out);
+        } catch (NumberFormatException e) {
+            out.println("Bundle id has wrong format: " + args[0]);
+        }
+    }
+
+    public void bndsinfo(PrintWriter out, String... args) {
+        Bundle[] bundles = bc.getBundles();
+        for (Bundle bundle : bundles) {
+            printBundleInfo(bundle, out);
+        }
+    }
+......................
+}
+}}}
+
+2. Command service registration.
+{{{
+ShellTestService shellTestService = ....;
+Dictionary<String, Object> props = new Hashtable<String, Object>();
+props.put("org.osgilab.tips.shell.group.id", "test_group_id");
+props.put("org.osgilab.tips.shell.group.name", "Test commands");
+String[][] commandsArray = new String[2][2];
+commandsArray[0] = new String[]{"bndinfo", "bndinfo <bundleId> - Print information for bundle with <bundleId>"};
+commandsArray[1] = new String[]{"bndsinfo", "bndsinfo - Print information for all bundles"};
+props.put("org.osgilab.tips.shell.commands", commandsArray);
+bc.registerService(ShellTestService.class.getName(), shellTestService, props);
+}}}
+
+== Details ==
+
+Current version: *1.0.0* (20100505)
+
+Equinox Adapter download: [http://osgilab.googlecode.com/files/equinox-1.0.0.jar equinox-1.0.0.jar]
+
+Equinox Adapter Sources download: [http://osgilab.googlecode.com/files/equinox-1.0.0-sources.jar equinox-1.0.0-sources.jar]
+
+Equinox Adapter Sources browse: [http://code.google.com/p/osgilab/source/browse/tags/shell-equinox-1.0.0 Here] 
+
+Equinox Adapter Maven Artifact:
+{{{
+<dependency>
+    <groupId>org.osgilab.bundles.shell</groupId>
+    <artifactId>equinox</artifactId>
+    <version>1.0.0</version>
+</dependency>
+}}}
+
+Felix Adapter download: [http://osgilab.googlecode.com/files/felix-1.0.0.jar felix-1.0.0.jar]
+
+Felix Adapter Sources download: [http://osgilab.googlecode.com/files/felix-1.0.0-sources.jar felix-1.0.0-sources.jar]
+
+Felix Adapter Sources browse: [http://code.google.com/p/osgilab/source/browse/tags/shell-felix-1.0.0 Here] 
+
+Felix Adapter Maven Artifact:
+{{{
+<dependency>
+    <groupId>org.osgilab.bundles.shell</groupId>
+    <artifactId>felix</artifactId>
+    <version>1.0.0</version>
+</dependency>
+}}}
+
+Knopflerfish Adapter download: [http://osgilab.googlecode.com/files/knopflerfish-1.0.0.jar knopflerfish-1.0.0.jar]
+
+Knopflerfish Adapter Sources download: [http://osgilab.googlecode.com/files/knopflerfish-1.0.0-sources.jar knopflerfish-1.0.0-sources.jar]
+
+Knopflerfish Adapter Sources browse: [http://code.google.com/p/osgilab/source/browse/tags/shell-knopflerfish-1.0.0 Here] 
+
+Knopflerfish Adapter Maven Artifact:
+{{{
+<dependency>
+    <groupId>org.osgilab.bundles.shell</groupId>
+    <artifactId>knopflerfish</artifactId>
+    <version>1.0.0</version>
+</dependency>
+}}}
+
+== Changes == 
+*1.0.0*
+Implemented functionality:
+  * Eclipse Equinox Universal Shell Adapter
+  * Apache Felix Universal Shell Adapter
+  * Knopflerfish Universal Shell Adapter
