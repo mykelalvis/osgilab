@@ -1,5 +1,5 @@
 #labels Featured
-  *  *2010-05-05*: OSGi [UniversalShell universal shell] adapters 1.0.0 are released
+  *  *2010-05-05*: OSGi [UniversalShell Universal shell] adapters 1.0.0 are released
   *  *2010-04-29*: OSGiLab provides Maven Repository for artifacts that are used and not available in Central Maven Repository: [http://osgilab.googlecode.com/svn/repo/ OSGiLab Repo]
   *  *2010-04-27*: OSGiLab bundles are available in Maven Central Repository. groupId: [http://repo2.maven.org/maven2/org/osgilab/ org.osgilab]
   *  *2010-04-26*: OSGi [JMX] Management Model 1.0.1 bundle is released.
