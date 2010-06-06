@@ -122,3 +122,6 @@ Implemented functionality:
   * Eclipse Equinox Universal Shell Adapter
   * Apache Felix Universal Shell Adapter
   * Knopflerfish Universal Shell Adapter
+
+  == Roadmap ==
+  * add support of RFC147 as soon as it is released for public review
