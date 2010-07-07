@@ -1,4 +1,5 @@
 #labels Featured
+  *  *2010-07-01*: osgilab.org domain was moved to knowhowlab.org domain. All packages are renamed from org.osgilab.`*` to org.knowhowlab.`*`. All future versions will be released under org.knowhowlab.`*` maven group.
   *  *2010-06-06*: OSGiLab [TestingCommons Testing Commons] 1.0.0 is released
   *  *2010-05-05*: OSGi [UniversalShell Universal shell] adapters 1.0.0 are released
   *  *2010-04-29*: OSGiLab provides Maven Repository for artifacts that are used and not available in Central Maven Repository: [http://osgilab.googlecode.com/svn/repo/ OSGiLab Repo]
