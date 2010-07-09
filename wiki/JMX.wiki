@@ -57,5 +57,8 @@ Optional implemented functionality:
 
 Logging: OSGi LogService if available, otherwise - java.util.logging
 
+System properties:
+  * org.knowhowlab.osgi.jmx.beans.service.monitor.all.events = true - notify all MonitorAdmin events including jobs events
+
 == Roadmap ==
   * redesign to add support of new/existing Compendium Service MBeans as separate bundles
