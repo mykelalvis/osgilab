@@ -53,7 +53,7 @@ Implemented functionality:
   * org.osgi.jmx.service.provisioning.ProvisioningServiceMBean
   * org.osgi.jmx.service.useradmin.UserAdminMBean
 Optional implemented functionality:
-  * [http://osgilab.googlecode.com/svn/tags/jmx-1.0.2/javadoc/org/osgilab/bundles/jmx/service/monitor/MonitorAdminMBean.html org.osgilab.bundles.jmx.service.monitor.MonitorAdminMBean] - MonitorAdmin JMX bean
+  * [http://osgilab.googlecode.com/svn/tags/jmx-1.0.2/javadoc/org/knowhowlab/osgi/jmx/service/monitor/MonitorAdminMBean.html org.osgilab.bundles.jmx.service.monitor.MonitorAdminMBean] - MonitorAdmin JMX bean
 
 Logging: OSGi LogService if available, otherwise - java.util.logging
 
