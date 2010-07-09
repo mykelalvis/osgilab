@@ -10,26 +10,34 @@ Specification reference: [http://www.osgi.org/Download/File?url=/download/r4v42/
 API JavaDoc reference: [http://www.osgi.org/javadoc/r4v42/org/osgi/jmx/package-summary.html Here].
  
 
-Current version: *1.0.1* (20100426)
+Current version: *1.0.2* (20100709)
 
-Bundle download: [http://osgilab.googlecode.com/files/jmx-1.0.1.jar jmx-1.0.1.jar]
+Bundle download: [http://osgilab.googlecode.com/files/jmx-1.0.2.jar jmx-1.0.2.jar]
 
-Sources download: [http://osgilab.googlecode.com/files/jmx-1.0.1-sources.jar jmx-1.0.1-sources.jar]  
+Sources download: [http://osgilab.googlecode.com/files/jmx-1.0.2-sources.jar jmx-1.0.2-sources.jar]
 
-Javadoc download: [http://osgilab.googlecode.com/files/jmx-1.0.1-javadoc.jar jmx-1.0.1-javadoc.jar]  
+Javadoc download: [http://osgilab.googlecode.com/files/jmx-1.0.2-javadoc.jar jmx-1.0.2-javadoc.jar]
 
-Sources browse: [http://code.google.com/p/osgilab/source/browse/tags/jmx-1.0.1 Here] 
+Sources browse: [http://code.google.com/p/osgilab/source/browse/tags/jmx-1.0.2 Here]
 
 Maven Artifact:
 {{{
 <dependency>
-    <groupId>org.osgilab.bundles</groupId>
+    <groupId>org.knowhowlab.osgi</groupId>
     <artifactId>jmx</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 }}}
 
 == Changes == 
+*1.0.2*
+  * refactor package to org.knowhowlab.osgi.jmx
+  * change groupId to org.knowhowlab.osgi
+  * change license to Apache License 2.0
+  * add support of MonitorAdmin event to notify through JMX
+  * handle errors on bundle start and unregister registered MBeans
+  * embed org.osgi.jmx package
+
 *1.0.1*
   * fix NoClassDefFoundException for Compendium service
   * fix NPEs
@@ -45,18 +53,9 @@ Implemented functionality:
   * org.osgi.jmx.service.provisioning.ProvisioningServiceMBean
   * org.osgi.jmx.service.useradmin.UserAdminMBean
 Optional implemented functionality:
-  * [http://osgilab.googlecode.com/svn/tags/jmx-1.0.0/javadoc/org/osgilab/bundles/jmx/service/monitor/MonitorAdminMBean.html org.osgilab.bundles.jmx.service.monitor.MonitorAdminMBean] - MonitorAdmin JMX bean
+  * [http://osgilab.googlecode.com/svn/tags/jmx-1.0.2/javadoc/org/osgilab/bundles/jmx/service/monitor/MonitorAdminMBean.html org.osgilab.bundles.jmx.service.monitor.MonitorAdminMBean] - MonitorAdmin JMX bean
 
 Logging: OSGi LogService if available, otherwise - java.util.logging
-
-== Source Build Tips ==
-The project depends on OSGi Enterprise API jar that is not uploaded to Central Maven repository. You have to use OSGiLab Maven repository where this artifact is available:
-{{{
-<repository>
-  <id>osgilab-repo</id>
-  <url>http://osgilab.googlecode.com/svn/repo/</url>
-</repository>
-}}}
 
 == Roadmap ==
   * redesign to add support of new/existing Compendium Service MBeans as separate bundles
