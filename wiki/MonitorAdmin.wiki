@@ -10,30 +10,38 @@ Specification reference: [http://www.osgi.org/Download/File?url=/download/r4v42/
 API JavaDoc reference: [http://www.osgi.org/javadoc/r4v42/org/osgi/service/monitor/package-summary.html Here].
  
 
-Current version: *1.0.1* (20100426)
+Current version: *1.0.2* (20100728)
 
-Bundle download: [http://osgilab.googlecode.com/files/monitoradmin-1.0.1.jar monitoradmin-1.0.1.jar]
+Bundle download: [http://osgilab.googlecode.com/files/monitoradmin-1.0.2.jar monitoradmin-1.0.2.jar]
 
-Sources download: [http://osgilab.googlecode.com/files/monitoradmin-1.0.1-sources.jar monitoradmin-1.0.1-sources.jar]  
+Sources download: [http://osgilab.googlecode.com/files/monitoradmin-1.0.2-sources.jar monitoradmin-1.0.2-sources.jar]
 
-Sources browse: [http://code.google.com/p/osgilab/source/browse/tags/monitoradmin-1.0.1 Here] 
+Sources browse: [http://code.google.com/p/osgilab/source/browse/tags/monitoradmin-1.0.2 Here]
 
 Maven Artifact:
 {{{
 <dependency>
-    <groupId>org.osgilab.bundles</groupId>
+    <groupId>org.knowhowlab.osgi</groupId>
     <artifactId>monitoradmin</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 }}}
 
 == Changes == 
+*1.0.2*
+  * change POM packaging to JAR
+  * embed org.osgi.service.monitor package
+  * refactor package to org.knowhowlab.osgi.monitoradmin
+  * change groupId to org.knowhowlab.osgi
+  * change license to Apache License 2.0
+  * add support of security permissions
+  * add local permissions file
+
 *1.0.1*
   * recompile with J2SE5 
   * use OSGi specification 4.1.0 dependencies
 
 *1.0.0*
-
 Implemented functionality:
   * String getDescription(String path)
   * String[] getMonitorableNames()
@@ -48,8 +56,8 @@ Implemented functionality:
   * StatusVariable notification events
 
 Not implemented functionality:
-  * Security checks
   * Remote Jobs
+  * Device Management Tree support
 
 == Dependencies ==
   * OSGi EventAdmin Service
