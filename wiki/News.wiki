@@ -1,4 +1,5 @@
 #labels Featured
+  *  *2011-04-02*: OSGi [UniversalShell Universal shell] adapters 1.0.1 are released
   *  *2010-07-28*: OSGi MonitorAdmin 1.0.2 bundle is released. 
   *  *2010-07-09*: OSGi [JMX] Management Model 1.0.2 bundle is released.
   *  *2010-07-01*: osgilab.org domain was moved to knowhowlab.org domain. All packages are renamed from org.osgilab.`*` to org.knowhowlab.`*`. All future versions will be released under org.knowhowlab.`*` maven group.
