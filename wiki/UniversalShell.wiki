@@ -15,9 +15,9 @@ public void <command_name>(java.io.PrintWriter out, java.lang.String[] args);
   * args - command arguments list
 
 2. Register Services in BundleContext with definition:
-  * service property *"org.osgilab.tips.shell.group.id"* (*mandatory*, java.lang.String) - unique commands group id. Used by some framework specific shell API that support command groups;
-  * service property *"org.osgilab.tips.shell.group.name"* (*mandatory*, java.lang.String) - commands group name. Used by some framework specific shell API that support command groups;
-  * service property *"org.osgilab.tips.shell.commands"* (*mandatory*, java.lang.String[][]) - commands definition "command_name" -> "command_help";
+  * service property *"org.knowhowlab.osgi.shell.group.id"* (*mandatory*, java.lang.String) - unique commands group id. Used by some framework specific shell API that support command groups;
+  * service property *"org.knowhowlab.osgi.shell.group.name"* (*mandatory*, java.lang.String) - commands group name. Used by some framework specific shell API that support command groups;
+  * service property *"org.knowhowlab.osgi.shell.commands"* (*mandatory*, java.lang.String[][]) - commands definition "command_name" -> "command_help";
   * service object class - could be used any value. It's very useful when commands are included into interface implementation.
 
 Here is a sample of new commands:
@@ -58,65 +58,86 @@ public class ShellTestService {
 {{{
 ShellTestService shellTestService = ....;
 Dictionary<String, Object> props = new Hashtable<String, Object>();
-props.put("org.osgilab.tips.shell.group.id", "test_group_id");
-props.put("org.osgilab.tips.shell.group.name", "Test commands");
+props.put("org.knowhowlab.osgi.shell.group.id", "test_group_id");
+props.put("org.knowhowlab.osgi.shell.group.name", "Test commands");
 String[][] commandsArray = new String[2][2];
 commandsArray[0] = new String[]{"bndinfo", "bndinfo <bundleId> - Print information for bundle with <bundleId>"};
 commandsArray[1] = new String[]{"bndsinfo", "bndsinfo - Print information for all bundles"};
-props.put("org.osgilab.tips.shell.commands", commandsArray);
+props.put("org.knowhowlab.osgi.shell.commands", commandsArray);
 bc.registerService(ShellTestService.class.getName(), shellTestService, props);
 }}}
 
 == Details ==
 
-Current version: *1.0.0* (20100505)
+Current version: *1.0.1* (20110402)
 
-Equinox Adapter download: [http://osgilab.googlecode.com/files/equinox-1.0.0.jar equinox-1.0.0.jar]
+Equinox Adapter download: [http://osgilab.googlecode.com/files/equinox-1.0.1.jar equinox-1.0.1.jar]
 
-Equinox Adapter Sources download: [http://osgilab.googlecode.com/files/equinox-1.0.0-sources.jar equinox-1.0.0-sources.jar]
+Equinox Adapter Sources download: [http://osgilab.googlecode.com/files/equinox-1.0.1-sources.jar equinox-1.0.1-sources.jar]
 
-Equinox Adapter Sources browse: [http://code.google.com/p/osgilab/source/browse/tags/shell-equinox-1.0.0 Here] 
+Equinox Adapter Sources browse: [http://code.google.com/p/osgilab/source/browse/tags/shell-equinox-1.0.1 Here] 
 
 Equinox Adapter Maven Artifact:
 {{{
 <dependency>
-    <groupId>org.osgilab.bundles.shell</groupId>
+    <groupId>org.knowhowlab.osgi.shell</groupId>
     <artifactId>equinox</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 }}}
 
-Felix Adapter download: [http://osgilab.googlecode.com/files/felix-1.0.0.jar felix-1.0.0.jar]
+Felix Adapter download: [http://osgilab.googlecode.com/files/felix-1.0.1.jar felix-1.0.1.jar]
 
-Felix Adapter Sources download: [http://osgilab.googlecode.com/files/felix-1.0.0-sources.jar felix-1.0.0-sources.jar]
+Felix Adapter Sources download: [http://osgilab.googlecode.com/files/felix-1.0.1-sources.jar felix-1.0.1-sources.jar]
 
-Felix Adapter Sources browse: [http://code.google.com/p/osgilab/source/browse/tags/shell-felix-1.0.0 Here] 
+Felix Adapter Sources browse: [http://code.google.com/p/osgilab/source/browse/tags/shell-felix-1.0.1 Here] 
 
 Felix Adapter Maven Artifact:
 {{{
 <dependency>
-    <groupId>org.osgilab.bundles.shell</groupId>
+    <groupId>org.knowhowlab.osgi.shell</groupId>
     <artifactId>felix</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 }}}
 
-Knopflerfish Adapter download: [http://osgilab.googlecode.com/files/knopflerfish-1.0.0.jar knopflerfish-1.0.0.jar]
+Felix GoGo Adapter download: [http://osgilab.googlecode.com/files/felix-gogo-1.0.1.jar felix-gogo-1.0.1.jar]
 
-Knopflerfish Adapter Sources download: [http://osgilab.googlecode.com/files/knopflerfish-1.0.0-sources.jar knopflerfish-1.0.0-sources.jar]
+Felix GoGo Adapter Sources download: [http://osgilab.googlecode.com/files/felix-gogo-1.0.1-sources.jar felix-gogo-1.0.1-sources.jar]
 
-Knopflerfish Adapter Sources browse: [http://code.google.com/p/osgilab/source/browse/tags/shell-knopflerfish-1.0.0 Here] 
+Felix Adapter Sources browse: [http://code.google.com/p/osgilab/source/browse/tags/shell-felix-gogo-1.0.1 Here] 
+
+Felix Adapter Maven Artifact:
+{{{
+<dependency>
+    <groupId>org.knowhowlab.osgi.shell</groupId>
+    <artifactId>felix-gogo</artifactId>
+    <version>1.0.1</version>
+</dependency>
+}}}
+
+Knopflerfish Adapter download: [http://osgilab.googlecode.com/files/knopflerfish-1.0.1.jar knopflerfish-1.0.1.jar]
+
+Knopflerfish Adapter Sources download: [http://osgilab.googlecode.com/files/knopflerfish-1.0.1-sources.jar knopflerfish-1.0.1-sources.jar]
+
+Knopflerfish Adapter Sources browse: [http://code.google.com/p/osgilab/source/browse/tags/shell-knopflerfish-1.0.1 Here] 
 
 Knopflerfish Adapter Maven Artifact:
 {{{
 <dependency>
-    <groupId>org.osgilab.bundles.shell</groupId>
+    <groupId>org.knowhowlab.osgi.shell</groupId>
     <artifactId>knopflerfish</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 }}}
 
 == Changes == 
+*1.0.1*
+Implemented functionality:
+  * Changed package to org.knowhowlab.osgi*
+  * Changed maven groupId to org.knowhowlab.osgi.shell
+  * Added Apache Felix GoGo Universal Shell Adapter
+
 *1.0.0*
 Implemented functionality:
   * Eclipse Equinox Universal Shell Adapter
