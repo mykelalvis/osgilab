@@ -134,7 +134,7 @@ Knopflerfish Adapter Maven Artifact:
 == Changes == 
 *1.0.1*
 Implemented functionality:
-  * Changed package to org.knowhowlab.osgi*
+  * Changed package to org.knowhowlab.osgi.shell
   * Changed maven groupId to org.knowhowlab.osgi.shell
   * Added Apache Felix GoGo Universal Shell Adapter
 
