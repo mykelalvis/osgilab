@@ -87,7 +87,7 @@ bc.registerService(ShellTestService.class.getName(), shellTestService, props);
     <property name="org.knowhowlab.osgi.shell.group.id" type="String" value="test_group_id"/>
     <property name="org.knowhowlab.osgi.shell.group.name" type="String" value="Test commands"/>
     <property name="org.knowhowlab.osgi.shell.commands" type="String">
-        bndinfo#bndinfo <bundleId> - Print information for bundle with <bundleId>
+        bndinfo#bndinfo - Print information for bundle with bundleId
         bndsinfo#bndsinfo - Print information for all bundles
     </property>
 ...
